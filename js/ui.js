@@ -9,6 +9,7 @@ const fmt = (n) => 'RM' + Math.round(n).toLocaleString('en-MY');
 const UI = {
   game: null,
   zoom: 1,
+  baseSize: 1500,   // 大地图画布基准尺寸（缩放=改宽度）
   tokenEls: {},   // playerKey -> element
   myKey: 'me',    // 本机玩家（guest 时由 net 层设置）
   remote: false,  // guest 模式：按钮动作走 Net.act 上行
@@ -46,6 +47,8 @@ const UI = {
     b.appendChild(center);
     this.renderOwnership();
     this.renderTokens();
+    $('#minimap').hidden = false;   // 小地图常驻（参考环游大富翁样式）
+    this.renderMinimap();
   },
 
   renderOwnership() {
@@ -83,6 +86,7 @@ const UI = {
       cell.appendChild(tk);
       this.tokenEls[p.key] = tk;
     });
+    this.renderMinimap();
   },
 
   async animateMove(p, path) {
@@ -284,26 +288,40 @@ const UI = {
 
   /* ---------- 工具条：缩放/找我/小地图 ---------- */
   applyZoom() {
-    $('#board').style.transform = `scale(${this.zoom})`;
+    $('#board').style.width = (this.baseSize * this.zoom) + 'px';   // 缩放=改画布宽度（grid 自适应）
   },
-  setZoom(z) { this.zoom = Math.min(2.2, Math.max(0.55, z)); this.applyZoom(); },
+  setZoom(z) { this.zoom = Math.min(1.8, Math.max(0.3, z)); this.applyZoom(); },
+  fit() {   // 看全图：整张地图缩进视口
+    const w = $('#boardWrap');
+    this.setZoom(Math.min((w.clientWidth - 8) / this.baseSize, (w.clientHeight - 8) / this.baseSize));
+  },
   findMe() {
     const p = this.game.players.find(x => x.key === this.myKey) || this.game.players[0];
     const cell = $(`#board .cell[data-i="${p.pos}"]`);
-    if (cell) { cell.classList.add('hi'); setTimeout(() => cell.classList.remove('hi'), 1200); }
-    this.setZoom(1);
+    if (this.zoom < 0.75) this.setZoom(1);
+    if (cell) {
+      cell.classList.add('hi'); setTimeout(() => cell.classList.remove('hi'), 1200);
+      cell.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+    }
+  },
+  renderMinimap() {   // 小地图：金点=我（按真实环形布局映射 8×8）
+    const mm = $('#minimap');
+    if (mm.hidden || !this.game) return;
+    mm.style.top = ($('#boardWrap').getBoundingClientRect().top + 8) + 'px';   // fixed：浮在棋盘区左上
+    const g = this.game;
+    const slots = new Array(64).fill('<i></i>');
+    for (let i = 0; i < N; i++) {
+      const { r, c } = this.cellPos(i);
+      const meHere = g.players.some(p => !p.bankrupt && p.pos === i && p.key === this.myKey);
+      const t = BOARD[i];
+      const bg = t.type === 'land' ? ` style="background:${GROUPS[t.group].color}"` : '';
+      slots[(r - 1) * 8 + (c - 1)] = `<i class="${meHere ? 'me' : ''}"${meHere ? '' : bg}></i>`;
+    }
+    mm.innerHTML = `<div class="mm-grid">${slots.join('')}</div>`;
   },
   toggleMinimap() {
     const mm = $('#minimap');
-    if (!mm.hidden) { mm.hidden = true; return; }
-    const g = this.game;
-    let cells = '';
-    for (let i = 0; i < N; i++) {
-      const meHere = g.players.some(p => !p.bankrupt && p.pos === i);
-      cells += `<i class="${meHere ? 'me' : ''}"></i>`;
-    }
-    mm.innerHTML = `<div class="mm-grid">${cells}</div>`;
-    mm.hidden = false;
-    setTimeout(() => { mm.hidden = true; }, 4000);
-  }
+    mm.hidden = !mm.hidden;
+    this.renderMinimap();
+  },
 };

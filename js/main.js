@@ -154,6 +154,7 @@ async function startGame(opts) {
   UI.renderHUD();
   UI.feed('🎮 开局！经过 KLIA 领工资，买地收租，轮数到后净资产最高者胜', 'ev-sys');
   bindGameButtons();
+  setTimeout(() => UI.findMe(), 120);   // 开局定位到自己所在格
 
   if (Net.online && Net.isHost) {
     UI.remote = false;
@@ -171,7 +172,7 @@ function bindGameButtons() {
     const act = e.target.dataset && e.target.dataset.act;
     if (act === 'in') UI.setZoom(UI.zoom + 0.25);
     else if (act === 'out') UI.setZoom(UI.zoom - 0.25);
-    else if (act === 'fit') UI.setZoom(1);
+    else if (act === 'fit') UI.fit();
     else if (act === 'me') UI.findMe();
     else if (act === 'map') UI.toggleMinimap();
   };
@@ -347,6 +348,7 @@ function bootGuest(r) {
   UI.renderPlayers();
   UI.renderHUD();
   bindGameButtons();
+  setTimeout(() => UI.findMe(), 120);
   $('#btnRoll').onclick = () => {
     if (!G || G.phase !== 'roll' || G.current.key !== Net.myKey || G.current.bankrupt) return;
     Net.act('roll');
