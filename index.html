@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#0B2434">
 <title>环马大富翁 · EatPlan Monopoly</title>
+<!-- 联机房间 API：同域部署留空；跨域部署填来源，如 https://example.com （游戏本身不绑定任何站点） -->
+<script>window.EP_MONO_API = window.EP_MONO_API || '';</script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -41,13 +43,27 @@
 <div id="roomScreen" class="screen" hidden>
   <div class="start-card">
     <h2>多人联网</h2>
-    <div class="opt-row">
-      <label>房间码</label>
-      <input id="roomCode" class="room-input" maxlength="4" placeholder="如 A3K9" autocomplete="off">
+    <div id="roomStep1">
+      <div class="opt-row">
+        <label>你的昵称</label>
+        <input id="nickName" maxlength="8" placeholder="如 吃货阿明" autocomplete="off">
+      </div>
+      <div class="opt-row">
+        <label>房间码（加入朋友的房间时填）</label>
+        <input id="roomCode" class="room-input" maxlength="4" placeholder="如 A3K9" autocomplete="off">
+      </div>
+      <button class="btn-primary" id="btnRoomCreate">➕ 创建房间（等朋友加入）</button>
+      <button class="btn-ghost" id="btnRoomJoin">🚪 加入房间（输房间码）</button>
+      <button class="btn-ghost" id="btnRoomBack">← 返回</button>
+      <p class="hint" id="roomMsg">创建后把 4 位房间码发给朋友，2–4 人同局</p>
     </div>
-    <button class="btn-primary" id="btnRoomJoin">加入 / 创建房间</button>
-    <button class="btn-ghost" id="btnRoomBack">← 返回</button>
-    <p class="hint" id="roomMsg">同一个房间码的玩家轮流操作（需服务端支持）</p>
+    <div id="roomStep2" hidden>
+      <div class="room-code-big" id="roomCodeBig">----</div>
+      <ul class="room-list" id="roomList"></ul>
+      <button class="btn-primary" id="btnRoomStart">▶ 开始对局</button>
+      <p class="hint" id="roomWaitMsg">等待房主开局…</p>
+      <button class="btn-ghost" id="btnRoomQuit">离开房间</button>
+    </div>
   </div>
 </div>
 
@@ -98,6 +114,7 @@
 <script src="js/state.js"></script>
 <script src="js/ai.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/net.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

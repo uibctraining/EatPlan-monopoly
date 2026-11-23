@@ -34,6 +34,14 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .hint { font-size: 12px; color: #6D93A5; margin: 12px 0 0; }
 .room-input { width: 100%; padding: 12px; font-size: 22px; text-align: center; letter-spacing: 8px;
   text-transform: uppercase; border-radius: 10px; border: 1px solid #2C5C74; background: #08222F; color: #FFD34D; }
+.room-code-big { font-size: 46px; font-weight: 800; letter-spacing: 10px; color: #FFD34D;
+  background: #08222F; border: 2px dashed #2C6C8C; border-radius: 14px; padding: 12px 6px; margin: 6px 0 14px; }
+.room-list { list-style: none; padding: 0; margin: 0 0 14px; text-align: left; }
+.room-list li { background: #0E3145; border: 1px solid #1B4A63; border-radius: 9px;
+  padding: 9px 12px; margin-bottom: 6px; font-size: 14px; }
+#nickName { width: 100%; padding: 11px 12px; font-size: 15px; border-radius: 10px;
+  border: 1px solid #2C5C74; background: #08222F; color: #EAF3F7; }
+#nickName:focus, .room-input:focus { outline: none; border-color: #FFD34D; }
 
 /* ---------- 顶栏 / 玩家条 ---------- */
 #top { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px;

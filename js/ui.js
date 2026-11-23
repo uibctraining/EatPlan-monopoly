@@ -10,6 +10,8 @@ const UI = {
   game: null,
   zoom: 1,
   tokenEls: {},   // playerKey -> element
+  myKey: 'me',    // 本机玩家（guest 时由 net 层设置）
+  remote: false,  // guest 模式：按钮动作走 Net.act 上行
 
   /* ---------- 棋盘 ---------- */
   cellPos(i) {
@@ -107,11 +109,12 @@ const UI = {
   },
 
   renderHUD() {
-    const g = this.game, me = g.players[0];
+    const g = this.game;
+    const me = g.players.find(p => p.key === this.myKey) || g.players[0];
     const cur = g.current;
     $('#hudCash').textContent = fmt(me.cash);
     $('#hudLoan').textContent = fmt(me.loan);
-    const isMe = !cur.bankrupt && g.turnIdx === 0;
+    const isMe = !cur.bankrupt && cur.key === this.myKey;
     $('#hudTurn').textContent = g.phase === 'end' ? '已结算' : (isMe ? '你的回合 🎲' : `${cur.emoji} ${cur.name} 的回合`);
     $('#hudTurn').classList.toggle('my', isMe);
     const can = isMe && g.canRoll();
@@ -120,6 +123,11 @@ const UI = {
   },
 
   feed(html, cls) {
+    const g = this.game;
+    if (g && Array.isArray(g.log)) {
+      g.log.unshift({ h: html, c: cls || '' });
+      if (g.log.length > 30) g.log.pop();
+    }
     const f = $('#feed');
     const d = document.createElement('div');
     if (cls) d.className = cls;
@@ -201,7 +209,7 @@ const UI = {
   async bankPanel() {
     const g = this.game;
     if (g.phase === 'end') { this.settleModal(); return; }
-    if (g.turnIdx !== 0) { await this.modal(`<h3>🏦 环球银行</h3><div class="m-desc">等你自己的回合才能办理业务</div><div class="m-row"><button class="m-btn yes" onclick="UI.closeModal()">好</button></div>`); return; }
+    if (g.current.key !== this.myKey) { await this.modal(`<h3>🏦 环球银行</h3><div class="m-desc">等你自己的回合才能办理业务</div><div class="m-row"><button class="m-btn yes" onclick="UI.closeModal()">好</button></div>`); return; }
     const me = g.current;
     const lands = BOARD.filter(t => t.type === 'land' && g.owners[t.i] === me.key);
     const items = lands.map(t => {
@@ -226,12 +234,14 @@ const UI = {
       </div>
       <div class="m-row"><button class="m-btn yes" onclick="UI.closeModal()">关闭</button></div>`);
     $$('#modalCard [data-b]').forEach(b => b.onclick = () => {
+      if (this.remote) { Net.act('build', +b.dataset.b); this.closeModal(); this.feed('已提交盖房申请，等待房主确认', 'ev-sys'); return; }
       const ok = g.build(+b.dataset.b);
       this.renderOwnership(); this.renderPlayers();
       this.feed(ok ? `盖房成功 🏨` : '盖房失败', ok ? 'ev-good' : 'ev-bad');
       this.closeModal(); this.bankPanel();
     });
     $$('#modalCard [data-m]').forEach(b => b.onclick = () => {
+      if (this.remote) { Net.act('mortgage', +b.dataset.m); this.closeModal(); this.feed('已提交抵押申请，等待房主确认', 'ev-sys'); return; }
       const ok = g.mortgage(+b.dataset.m);
       this.renderOwnership(); this.renderPlayers();
       this.feed(ok ? '抵押成功，现金到账' : '抵押失败', ok ? 'ev-good' : 'ev-bad');
@@ -239,6 +249,7 @@ const UI = {
     });
     const rp = $('#modalCard [data-repay]');
     if (rp) rp.onclick = () => {
+      if (this.remote) { Net.act('repay', me.cash); this.closeModal(); this.feed('已提交还款申请，等待房主确认', 'ev-sys'); return; }
       const pay = g.repay(me.cash);
       this.renderPlayers();
       this.feed(pay > 0 ? `还贷 ${fmt(pay)}` : '无需还款', 'ev-sys');
@@ -277,7 +288,7 @@ const UI = {
   },
   setZoom(z) { this.zoom = Math.min(2.2, Math.max(0.55, z)); this.applyZoom(); },
   findMe() {
-    const p = this.game.players[0];
+    const p = this.game.players.find(x => x.key === this.myKey) || this.game.players[0];
     const cell = $(`#board .cell[data-i="${p.pos}"]`);
     if (cell) { cell.classList.add('hi'); setTimeout(() => cell.classList.remove('hi'), 1200); }
     this.setZoom(1);
