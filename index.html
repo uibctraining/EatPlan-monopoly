@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0B2434">
+<title>环马大富翁 · EatPlan Monopoly</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 开局菜单 -->
+<div id="startScreen" class="screen">
+  <div class="start-card">
+    <div class="start-logo">🇲🇾</div>
+    <h1>环马大富翁</h1>
+    <p class="sub">走遍 13 州 · 买地收租 · 现金流策略</p>
+    <div class="opt-row">
+      <label>对手</label>
+      <div class="chips" id="optBots">
+        <button class="chip" data-v="1">1 个电脑</button>
+        <button class="chip on" data-v="2">2 个电脑</button>
+        <button class="chip" data-v="3">3 个电脑</button>
+      </div>
+    </div>
+    <div class="opt-row">
+      <label>轮数</label>
+      <div class="chips" id="optRounds">
+        <button class="chip" data-v="5">5 轮</button>
+        <button class="chip on" data-v="10">10 轮</button>
+        <button class="chip" data-v="15">15 轮</button>
+      </div>
+    </div>
+    <button class="btn-primary" id="btnStart">🎲 单人开局（对战电脑）</button>
+    <button class="btn-ghost" id="btnRoom">🌐 创建房间 · 多人联网</button>
+    <p class="hint">多人联网：输入房间码，和朋友各用一台手机同局</p>
+  </div>
+</div>
+
+<!-- 联机房间弹层 -->
+<div id="roomScreen" class="screen" hidden>
+  <div class="start-card">
+    <h2>多人联网</h2>
+    <div class="opt-row">
+      <label>房间码</label>
+      <input id="roomCode" class="room-input" maxlength="4" placeholder="如 A3K9" autocomplete="off">
+    </div>
+    <button class="btn-primary" id="btnRoomJoin">加入 / 创建房间</button>
+    <button class="btn-ghost" id="btnRoomBack">← 返回</button>
+    <p class="hint" id="roomMsg">同一个房间码的玩家轮流操作（需服务端支持）</p>
+  </div>
+</div>
+
+<!-- 主界面 -->
+<div id="game" class="screen" hidden>
+  <header id="top">
+    <div class="t-left">环马大富翁</div>
+    <div class="t-mid"><span id="roundNo">第 1 轮</span> · <span id="roundMax">10 轮结算</span></div>
+    <div class="t-right"><button id="btnBankTop" class="t-btn">🏦</button><button id="btnNew" class="t-btn">↺</button></div>
+  </header>
+
+  <div id="players"></div>
+
+  <div id="toolbar">
+    <button data-act="out">− 缩小</button>
+    <button data-act="fit">看全图</button>
+    <button data-act="in">+ 放大</button>
+    <button data-act="me">找我</button>
+    <button data-act="map">小地图</button>
+  </div>
+
+  <div id="boardWrap">
+    <div id="board"></div>
+    <div id="minimap" hidden></div>
+  </div>
+
+  <div id="hud">
+    <div class="hud-turn" id="hudTurn">你的回合</div>
+    <div class="dice-box">
+      <div class="die" id="die1">⚀</div>
+      <div class="die" id="die2">⚀</div>
+    </div>
+    <button class="btn-roll" id="btnRoll">掷骰子</button>
+    <div class="hud-money">
+      <div>现金 <b id="hudCash">RM2,500</b></div>
+      <div class="loan-row">贷款 <b id="hudLoan">RM0</b><button id="btnBank" class="mini">银行</button></div>
+    </div>
+  </div>
+  <div id="feed"></div>
+</div>
+
+<!-- 通用弹窗 -->
+<div id="modal" class="modal" hidden>
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
