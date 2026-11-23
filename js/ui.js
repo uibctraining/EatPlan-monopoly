@@ -26,6 +26,7 @@ const UI = {
   buildBoard() {
     const b = $('#board');
     b.innerHTML = '';
+    this._lastCash = undefined;        // 新对局重置现金浮字基准
     for (let i = 0; i < N; i++) {
       const t = BOARD[i];
       const { r, c } = this.cellPos(i);
@@ -93,8 +94,17 @@ const UI = {
     for (const pos of path) {
       p.pos = pos;
       this.renderTokens();
+      this.followCell(pos);            // 镜头跟随移动中的棋子（每步=连续追踪）
       await sleep(130);
     }
+  },
+  followCell(pos) {   // 把该格滚到棋盘视口中心；走棋中每 130ms 调一次即平滑跟随
+    const w = $('#boardWrap');
+    const cell = $(`#board .cell[data-i="${pos}"]`);
+    if (!w || !cell) return;
+    const cx = cell.offsetLeft + cell.offsetWidth / 2;
+    const cy = cell.offsetTop + cell.offsetHeight / 2;
+    w.scrollTo({ left: cx - w.clientWidth / 2, top: cy - w.clientHeight / 2, behavior: 'auto' });
   },
 
   /* ---------- 玩家条 / HUD ---------- */
@@ -117,6 +127,17 @@ const UI = {
     const me = g.players.find(p => p.key === this.myKey) || g.players[0];
     const cur = g.current;
     $('#hudCash').textContent = fmt(me.cash);
+    if (this._lastCash !== undefined && me.cash !== this._lastCash) {   // 现金变动浮字
+      const d = me.cash - this._lastCash;
+      const f = $('#cashFloat');
+      if (f && d !== 0) {
+        f.textContent = (d > 0 ? '+' : '−') + fmt(Math.abs(d));
+        f.classList.remove('up', 'down');
+        void f.offsetWidth;              // 强制重排以重启动画
+        f.classList.add(d > 0 ? 'up' : 'down');
+      }
+    }
+    this._lastCash = me.cash;
     $('#hudLoan').textContent = fmt(me.loan);
     const isMe = !cur.bankrupt && cur.key === this.myKey;
     $('#hudTurn').textContent = g.phase === 'end' ? '已结算' : (isMe ? '你的回合 🎲' : `${cur.emoji} ${cur.name} 的回合`);

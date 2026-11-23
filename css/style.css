@@ -50,10 +50,13 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .t-mid { color: #9FC6D6; font-size: 13px; }
 .t-btn { background: none; font-size: 17px; padding: 2px 7px; color: #9FC6D6; }
 
-#players { display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto; background: #08202E; }
+#players { display: flex; gap: 6px; padding: 10px; overflow-x: auto; background: #08202E; }
 .pcard { flex: 1; min-width: 74px; padding: 6px 7px; border-radius: 10px; background: #0E2E42;
   border: 1px solid #1B4A63; position: relative; transition: .2s; }
-.pcard.on { border-color: #FFD34D; background: #16405A; box-shadow: 0 0 0 1px #FFD34D66; }
+.pcard.on { border-color: #FFD34D; background: #16405A; transform: scale(1.05); z-index: 1;
+  box-shadow: inset 0 0 12px #FFD34D33, 0 0 0 1px #FFD34D;
+  animation: onBreathe 2.2s ease-in-out infinite; }
+@keyframes onBreathe { 50% { background: #1B4E6D; } }
 .pcard.dead { opacity: .38; filter: grayscale(1); }
 .pcard .pn { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pcard .pc { font-size: 12px; color: #FFD34D; font-weight: 700; }
@@ -125,24 +128,38 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .cell .bi-s { color: #5A6E78; }
 
 /* ---------- 底部 HUD ---------- */
-#hud { display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+#hud { display: flex; flex-direction: column; gap: 7px; padding: 9px 12px 10px;
   background: #0A2434; border-top: 1px solid #17415A; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-.hud-turn { font-size: 13px; font-weight: 700; color: #9FC6D6; flex: 1; }
-.hud-turn.my { color: #7CFF9E; }
+.hud-turn { font-size: 15px; font-weight: 800; text-align: center; color: #9FC6D6; letter-spacing: .5px; }
+.hud-turn.my { color: #7CFF9E; text-shadow: 0 0 14px #7CFF9E66; animation: turnPulse 1.8s ease-in-out infinite; }
+@keyframes turnPulse { 50% { opacity: .72; } }
+.hud-main { display: flex; align-items: center; gap: 10px; }
 .dice-box { display: flex; gap: 5px; }
 .die { width: 34px; height: 34px; background: #F4F7F9; color: #12232E; border-radius: 7px;
   display: flex; align-items: center; justify-content: center; font-size: 24px;
   box-shadow: inset 0 -3px 0 #C7D2D8; }
-.btn-roll { padding: 13px 18px; font-size: 16px; font-weight: 800; border-radius: 12px;
-  background: linear-gradient(180deg, #FFDD6B, #F5B93B); color: #3A2A00; box-shadow: 0 5px 14px #F5B93B44; }
-.btn-roll:disabled { filter: grayscale(.8) brightness(.7); box-shadow: none; }
-.hud-money { font-size: 11px; color: #8FB6C7; text-align: right; line-height: 1.5; min-width: 92px; }
-.hud-money b { color: #FFD34D; font-size: 13px; }
+.btn-roll { flex: 1; padding: 15px 18px; font-size: 17px; font-weight: 800; border-radius: 14px;
+  background: linear-gradient(180deg, #FFDD6B, #F5B93B); color: #3A2A00;
+  box-shadow: 0 5px 14px #F5B93B44; animation: rollGlow 2s ease-in-out infinite; }
+.btn-roll:disabled { filter: grayscale(.8) brightness(.7); box-shadow: none; animation: none; }
+@keyframes rollGlow { 50% { box-shadow: 0 5px 24px #FFDD6B99; } }
+.hud-money { position: relative; font-size: 11px; color: #8FB6C7; text-align: right; line-height: 1.5; min-width: 96px; }
+.hud-money b { color: #FFD34D; font-size: 14px; }
+.cash-row { position: relative; }
+#cashFloat { position: absolute; right: -2px; top: -17px; font-size: 13px; font-weight: 800;
+  opacity: 0; pointer-events: none; white-space: nowrap;
+  text-shadow: 0 1px 3px #061520, 0 1px 6px #061520; }
+#cashFloat.up { color: #7CFF9E; animation: cashUp 1.2s ease-out forwards; }
+#cashFloat.down { color: #FF9C8F; animation: cashUp 1.2s ease-out forwards; }
+@keyframes cashUp { 0% { opacity: 0; transform: translateY(4px); } 12% { opacity: 1; transform: translateY(0); }
+  75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-16px); } }
 .loan-row { display: flex; gap: 5px; align-items: center; justify-content: flex-end; }
 .mini { font-size: 10px; padding: 2px 7px; border-radius: 6px; background: #123A50; color: #A9D2E2; border: 1px solid #2C5C74; }
 
 #feed { max-height: 74px; overflow-y: auto; background: #061520; font-size: 11.5px;
   color: #89AEc0; padding: 6px 12px; line-height: 1.55; }
+#feed > div:first-child { animation: feedIn .25s ease-out; }
+@keyframes feedIn { from { opacity: 0; transform: translateY(-6px); } }
 #feed .ev-good { color: #7CFF9E; }
 #feed .ev-bad { color: #FF9C8F; }
 #feed .ev-sys { color: #FFD34D; }

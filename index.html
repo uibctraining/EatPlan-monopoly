@@ -92,14 +92,16 @@
 
   <div id="hud">
     <div class="hud-turn" id="hudTurn">你的回合</div>
-    <div class="dice-box">
-      <div class="die" id="die1">⚀</div>
-      <div class="die" id="die2">⚀</div>
-    </div>
-    <button class="btn-roll" id="btnRoll">掷骰子</button>
-    <div class="hud-money">
-      <div>现金 <b id="hudCash">RM2,500</b></div>
-      <div class="loan-row">贷款 <b id="hudLoan">RM0</b><button id="btnBank" class="mini">银行</button></div>
+    <div class="hud-main">
+      <div class="dice-box">
+        <div class="die" id="die1">⚀</div>
+        <div class="die" id="die2">⚀</div>
+      </div>
+      <button class="btn-roll" id="btnRoll">掷骰子</button>
+      <div class="hud-money">
+        <div class="cash-row">现金 <b id="hudCash">RM2,500</b><span id="cashFloat"></span></div>
+        <div class="loan-row">贷款 <b id="hudLoan">RM0</b><button id="btnBank" class="mini">银行</button></div>
+      </div>
     </div>
   </div>
   <div id="feed"></div>
