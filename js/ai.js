@@ -41,5 +41,22 @@ const AI = {
     if (!mine.length) return null;
     mine.sort((a, b) => a.price - b.price); // 先抵押便宜的
     return mine[0].i;
+  },
+
+  /* 现金流投资：闲钱配保险（对冲天灾）+ 买高息股（被动现金流）。返回动作数组 */
+  planInvest(g, p) {
+    const acts = [];
+    if (p.bankrupt) return acts;
+    // 保险：现金尚可且没保险 → 先保一份
+    if (!p.ins || !p.ins.rounds) {
+      const want = p.cash > 1400 ? INSURANCE[1] : INSURANCE[0];   // 钱多保医疗，钱少保旅游
+      if (p.cash - want.premium >= 700) acts.push({ t: 'ins', id: want.id });
+    }
+    // 股票：留足现金缓冲后买 1 股「股息率/价格」最高的
+    const buf = acts.length ? 500 : 650;
+    const cand = STOCKS.filter(s => g.stockPrice(s.id) <= p.cash - buf)
+      .sort((a, b) => (b.div / g.stockPrice(b.id)) - (a.div / g.stockPrice(a.id)));
+    if (cand.length && !acts.some(a => a.t === 'buyStock')) acts.push({ t: 'buyStock', id: cand[0].id });
+    return acts;
   }
 };

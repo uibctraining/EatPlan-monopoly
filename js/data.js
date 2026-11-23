@@ -95,6 +95,24 @@ const AVATARS = [
   { key: 'cat',   name: '电脑·猫咪', emoji: '🐱', color: '#8A5CD1' }
 ];
 
+/* ============ 穷爸爸富爸爸 · 现金流玩法 ============ */
+
+/* 虚拟股票：每轮市场波动，每轮按股息率派息（被动现金流） */
+const STOCKS = [
+  { id: 'airasia', name: '亚航',      icon: '✈️', base: 100, div: 0.05, vol: 0.12 },
+  { id: 'tnb',     name: '国家电网',  icon: '💡', base: 60,  div: 0.08, vol: 0.05 },
+  { id: 'genting', name: '云顶集团',  icon: '🎰', base: 140, div: 0.04, vol: 0.15 },
+  { id: 'grab',    name: 'Grab 出行', icon: '🚕', base: 80,  div: 0.05, vol: 0.10 }
+];
+
+/* 保险：天灾人祸卡出险时按保额理赔（对冲风险） */
+const INSURANCE = [
+  { id: 'travel', name: '旅游意外险', icon: '🛡️', premium: 60,  term: 6, cover: 300, desc: '意外/天灾出险理赔 RM300' },
+  { id: 'health', name: '住院医疗险', icon: '🏥', premium: 100, term: 5, cover: 500, desc: '疾病/意外出险理赔 RM500' }
+];
+
+/* 卡牌 kind：disaster=天灾人祸（持对应保险可理赔）· lucky=幸运事件 */
+
 const ROSTER = {
   me:   { name: '我',         emoji: '🐼', color: '#E0A800' },
   fox:  { name: '电脑·鹦鹉',  emoji: '🦜', color: '#2F9E63' },

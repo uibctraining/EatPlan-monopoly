@@ -215,6 +215,7 @@ const UI = {
     if (g.phase === 'end') { this.settleModal(); return; }
     if (g.current.key !== this.myKey) { await this.modal(`<h3>🏦 环球银行</h3><div class="m-desc">等你自己的回合才能办理业务</div><div class="m-row"><button class="m-btn yes" onclick="UI.closeModal()">好</button></div>`); return; }
     const me = g.current;
+    if (!g.stocks) g.stocks = STOCKS.map(s => ({ id: s.id, price: s.base, prev: s.base }));
     const lands = BOARD.filter(t => t.type === 'land' && g.owners[t.i] === me.key);
     const items = lands.map(t => {
       const canB = g.canBuild(t), canM = g.canMortgage(t.i);
@@ -226,15 +227,55 @@ const UI = {
         </div></div>`;
     }).join('') || '<div class="bi-s">还没有地产</div>';
     const need = Math.ceil(me.loan * (1 + CFG.LOAN_INTEREST));
+
+    // 📈 股票市场（每轮波动 + 每轮派息 = 被动现金流）
+    const stockItems = STOCKS.map(s => {
+      const price = g.stockPrice(s.id);
+      const held = (me.holdings && me.holdings[s.id]) || 0;
+      const up = price >= s.base;
+      const canBuy = me.cash >= price;
+      return `<div class="bank-item"><div><div class="bi-n">${s.icon} ${s.name} ${held ? `<span class="bi-s">持 ${held} 股</span>` : ''}</div>
+        <div class="bi-s">现价 <b style="color:${up ? '#2F9E63' : '#D64541'}">${fmt(price)}</b> ${up ? '▲' : '▼'} · 股息率 ${(s.div * 100).toFixed(0)}%/年 · 年内每股息约 ${fmt(Math.round(price * s.div))}</div></div>
+        <div style="display:flex;gap:6px">
+          <button data-buy="${s.id}" ${canBuy && me.cash - price >= 0 ? '' : 'disabled'}>买 1 股</button>
+          <button data-sell="${s.id}" ${held > 0 ? '' : 'disabled'}>卖 1 股</button>
+        </div></div>`;
+    }).join('');
+
+    // 🛡 保险（天灾人祸出险理赔）
+    const insItems = INSURANCE.map(d => {
+      const active = me.ins && me.ins.id === d.id && me.ins.rounds > 0;
+      return `<div class="bank-item"><div><div class="bi-n">${d.icon} ${d.name} ${active ? `<span class="bi-s">生效中 · 剩 ${me.ins.rounds} 轮</span>` : ''}</div>
+        <div class="bi-s">保费 ${fmt(d.premium)} · 保 ${d.term} 轮 · 出险赔 ${fmt(d.cover)}</div></div>
+        <button data-ins="${d.id}" ${active || me.cash < d.premium ? 'disabled' : ''}>${active ? '已投保' : '投保'}</button></div>`;
+    }).join('');
+
+    // 📊 财务报表（穷爸爸富爸爸式）
+    const r = g.report(me);
     this.modal(`
-      <h3>🏦 环球银行</h3>
-      <div class="m-desc">工资 ${fmt(CFG.SALARY)}/圈 · 贷款利率 10% · 薪资、买地、盖房、贷款、税</div>
+      <h3>🏦 环球银行 · 财务中心</h3>
+      <div class="m-desc">工资 ${fmt(CFG.SALARY)}/圈 · 贷款利率 10%</div>
+      <div class="m-scroll">
+      <div class="bank-sec"><h4>📈 股票市场 · 每轮波动，持股每轮领股息（被动现金流）</h4>${stockItems}</div>
+      <div class="bank-sec"><h4>🛡 保险 · 天灾人祸出险自动理赔</h4>${insItems}</div>
+      <div class="bank-sec"><h4>📊 财务报表</h4>
+        <div class="bank-item"><div><div class="bi-n">💼 资产负债</div>
+          <div class="bi-s">现金 ${fmt(r.cash)} · 地产 ${fmt(r.land)} · 股票 ${fmt(r.stocks)} · 贷款 ${fmt(r.loan)}</div></div>
+          <div style="font-weight:800;color:${r.net >= 0 ? '#7CFF9E' : '#FF9C8F'}">净资产 ${fmt(r.net)}</div></div>
+        <div class="bank-item"><div><div class="bi-n">🔄 被动现金流</div>
+          <div class="bi-s">股息 ${fmt(r.stats.div || 0)} + 租金入 ${fmt(r.stats.rentIn || 0)} − 保费 ${fmt(r.stats.insCost || 0)}</div></div>
+          <div style="font-weight:800;color:${r.passive > 0 ? '#7CFF9E' : '#FF9C8F'}">${r.passive > 0 ? '+' : ''}${fmt(r.passive)}</div></div>
+        <div class="bank-item"><div><div class="bi-n">🧾 累计收支</div>
+          <div class="bi-s">主动收入 ${fmt(r.activeIn)}（工资+卡牌）· 支出 ${fmt(r.expense)}（租/税/卡牌）</div></div>
+          <div>${r.free ? '<span style="color:#7CFF9E;font-weight:800">✅ 跳出老鼠圈</span>' : '<span style="color:#8FB6C7;font-size:11px">被动现金流尚未覆盖支出</span>'}</div></div>
+      </div>
       <div class="bank-sec">
         <div class="bank-item"><div><div class="bi-n">💰 贷款余额</div><div class="bi-s">还清需 ${fmt(need)}（含利息）</div></div>
           <button data-repay="1" ${me.loan > 0 && me.cash > 0 ? '' : 'disabled'}>还款</button></div>
         <div class="bank-item"><div><div class="bi-n">💸 缺钱救急</div><div class="bi-s">抵押一块地得半价现金</div></div>
           <button data-mort="1" ${lands.some(t => g.canMortgage(t.i)) ? '' : 'disabled'}>去抵押</button></div>
         <h4>我的地产（${lands.length}）</h4>${items}
+      </div>
       </div>
       <div class="m-row"><button class="m-btn yes" onclick="UI.closeModal()">关闭</button></div>`);
     $$('#modalCard [data-b]').forEach(b => b.onclick = () => {
@@ -259,6 +300,32 @@ const UI = {
       this.feed(pay > 0 ? `还贷 ${fmt(pay)}` : '无需还款', 'ev-sys');
       this.closeModal(); this.bankPanel();
     };
+    $$('#modalCard [data-buy]').forEach(b => b.onclick = () => {
+      const id = b.dataset.buy;
+      if (this.remote) { Net.act('buyStock', id); this.closeModal(); this.feed('已提交买入申请，等待房主确认', 'ev-sys'); return; }
+      const cost = g.buyStock(me, id, 1);
+      this.renderPlayers(); this.renderHUD();
+      if (cost > 0) { const s = STOCKS.find(x => x.id === id); this.feed(`买入 ${s.icon}${s.name} 1股 -${fmt(cost)}`, 'ev-sys'); }
+      else this.feed('现金不足', 'ev-bad');
+      this.closeModal(); this.bankPanel();
+    });
+    $$('#modalCard [data-sell]').forEach(b => b.onclick = () => {
+      const id = b.dataset.sell;
+      if (this.remote) { Net.act('sellStock', id); this.closeModal(); this.feed('已提交卖出申请，等待房主确认', 'ev-sys'); return; }
+      const gain = g.sellStock(me, id, 1);
+      this.renderPlayers(); this.renderHUD();
+      if (gain > 0) { const s = STOCKS.find(x => x.id === id); this.feed(`卖出 ${s.icon}${s.name} 1股 +${fmt(gain)}`, 'ev-good'); }
+      this.closeModal(); this.bankPanel();
+    });
+    $$('#modalCard [data-ins]').forEach(b => b.onclick = () => {
+      const id = b.dataset.ins;
+      if (this.remote) { Net.act('buyIns', id); this.closeModal(); this.feed('已提交投保申请，等待房主确认', 'ev-sys'); return; }
+      const ok = g.buyInsurance(me, id);
+      this.renderPlayers();
+      if (ok) { const d = INSURANCE.find(x => x.id === id); this.feed(`投保 ${d.icon}${d.name} -${fmt(d.premium)}`, 'ev-sys'); }
+      else this.feed('现金不足或已有同款保险', 'ev-bad');
+      this.closeModal(); this.bankPanel();
+    });
   },
 
   async settleModal() {

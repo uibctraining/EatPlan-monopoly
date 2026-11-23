@@ -76,23 +76,23 @@ button { font-family: inherit; cursor: pointer; border: none; }
 #board { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
   width: 1500px; aspect-ratio: 1; gap: 3px; padding: 3px; flex: none; }
 
-.cell { position: relative; background: #0F3247; border-radius: 7px; overflow: hidden;
+.cell { position: relative; background: #FFFDF6; border-radius: 7px; overflow: hidden;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   font-size: 13px; line-height: 1.2; text-align: center; padding: 8px 5px 12px;
-  border: 1px solid #1D4E68; min-width: 0; }
-.cell .ci { font-size: 26px; filter: drop-shadow(0 2px 2px #0007); }
-.cell .cn { font-weight: 700; margin-top: 5px; color: #E7F2F7; word-break: break-all; font-size: 13px; }
-.cell .cp { color: #FFD34D; font-size: 11.5px; font-weight: 800; margin-top: 3px; }
+  border: 1px solid #E4DBC8; min-width: 0; }
+.cell .ci { font-size: 26px; filter: drop-shadow(0 2px 2px #0003); }
+.cell .cn { font-weight: 700; margin-top: 5px; color: #16303E; word-break: break-all; font-size: 13px; }
+.cell .cp { color: #A8620A; font-size: 11.5px; font-weight: 800; margin-top: 3px; }
 .cell .band { position: absolute; left: 0; right: 0; bottom: 0; height: 7px; }
 .cell.owned0 .band { height: 8px; }
 .cell .house { position: absolute; top: 4px; right: 6px; font-size: 16px; }
-.cell.type-start { background: #1A4A2E; border-color: #2E7DD1; }
-.cell.type-fortune, .cell.type-chance { background: #3B2E6B; border-color: #8A5CD1; }
-.cell.type-tax, .cell.type-sst { background: #4A3326; border-color: #E07B2E; }
-.cell.type-rest { background: #123A50; }
+.cell.type-start { background: #DFF5E4; border-color: #2F9E63; }
+.cell.type-fortune, .cell.type-chance { background: #EFE8FB; border-color: #8A5CD1; }
+.cell.type-tax, .cell.type-sst { background: #FDEBDC; border-color: #E07B2E; }
+.cell.type-rest { background: #E1F0FA; border-color: #2E7DD1; }
 .cell.hi { box-shadow: inset 0 0 0 2px #FFD34D; z-index: 2; }
 .cell.buyable { animation: pulse 1s infinite; }
-@keyframes pulse { 50% { box-shadow: inset 0 0 0 2px #7CFF9E; } }
+@keyframes pulse { 50% { box-shadow: inset 0 0 0 3px #2F9E63; } }
 
 .token { position: absolute; width: 42%; height: 42%; left: 30%; top: 5%;
   display: flex; align-items: center; justify-content: center; font-size: 26px;
@@ -105,12 +105,12 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
 /* 中央地图区 */
 #board .center { grid-column: 2 / 8; grid-row: 2 / 8; border-radius: 10px; position: relative;
-  background: linear-gradient(160deg, #0B2C3F, #0A2333); border: 1px solid #1B4A63;
+  background: linear-gradient(160deg, #F5F1E4, #E9F2E7); border: 1px solid #D8CDB4;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   overflow: hidden; padding: 8px; }
 .center .map { font-size: clamp(60px, 30vw, 170px); opacity: .9; text-align: center; line-height: 1.15; }
-.center .map small { display: block; font-size: 15px; color: #7FA9BC; letter-spacing: 5px; }
-.center .banner { margin-top: 14px; font-size: 17px; color: #FFD34D; text-align: center; font-weight: 700; }
+.center .map small { display: block; font-size: 15px; color: #6E7F72; letter-spacing: 5px; }
+.center .banner { margin-top: 14px; font-size: 17px; color: #A8620A; text-align: center; font-weight: 700; }
 
 #minimap { position: fixed; left: 8px; top: 150px; width: 88px; height: 88px; z-index: 6;
   background: #061520EE; border: 1px solid #2C5C74; border-radius: 8px; padding: 4px; }
@@ -119,6 +119,10 @@ button { font-family: inherit; cursor: pointer; border: none; }
 #minimap .mm-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; width: 100%; height: 100%; }
 #minimap i { background: #1B4A63; border-radius: 1px; font-style: normal; }
 #minimap i.me { background: #FFD34D; }
+
+/* 亮色棋盘上的可读性补充 */
+.cell.owned0 { box-shadow: inset 0 0 0 2px #16303E; }
+.cell .bi-s { color: #5A6E78; }
 
 /* ---------- 底部 HUD ---------- */
 #hud { display: flex; align-items: center; gap: 10px; padding: 10px 12px;
@@ -165,6 +169,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .m-flow .mf { text-align: center; font-size: 13px; }
 .m-flow .mf b { display: block; font-size: 22px; color: #FFD34D; }
 .m-flow .arrow { color: #FF9C8F; font-size: 20px; }
+.m-scroll { max-height: 58vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  text-align: left; margin: 0 -4px; padding: 0 4px; }
 
 /* 结算表 */
 .rank-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }

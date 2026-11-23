@@ -246,8 +246,9 @@ async function doTurn(p) {
   // 事件播放
   for (const ev of r.events) {
     if (ev.type === 'card') {
+      const kcls = ev.kind === 'disaster' ? 'ev-bad' : ev.kind === 'lucky' ? 'ev-good' : 'ev-sys';
       if (ctrl === 'local') await UI.cardModal(ev);
-      else { if (ctrl === 'ai') await sleep(400); UI.feed(`${p.emoji} ${ev.text}`, 'ev-sys'); }
+      else { if (ctrl === 'ai') await sleep(400); UI.feed(`${p.emoji} ${ev.text}`, kcls); }
     } else if (ev.type === 'rent') {
       UI.feed(`${ev.text}`, ev.to === 'me' ? 'ev-good' : 'ev-bad');
       if (ev.to === 'me' || ev.from === 'me') await UI.payModal(ev, G);
@@ -303,6 +304,24 @@ async function doTurn(p) {
       UI.feed(`${p.emoji} 在 ${BOARD[b].name} 升级 ${['小贩摊', '茶室', '酒店'][G.houses[b] - 1]}`, 'ev-sys');
       await sleep(400);
     }
+    // 穷爸爸富爸爸式现金流：闲钱自动配置保险 + 股票（每回合最多 2 笔）
+    let invest = AI.planInvest(G, p);
+    for (const act of invest.slice(0, 2)) {
+      if (act.t === 'ins') {
+        if (G.buyInsurance(p, act.id)) {
+          const d = INSURANCE.find(x => x.id === act.id);
+          UI.feed(`${p.emoji} 投保 ${d.icon}${d.name} -${fmt(d.premium)}`, 'ev-sys');
+        }
+      } else if (act.t === 'buyStock') {
+        const cost = G.buyStock(p, act.id, 1);
+        if (cost > 0) {
+          const s = STOCKS.find(x => x.id === act.id);
+          UI.feed(`${p.emoji} 买入 ${s.icon}${s.name} 1股 -${fmt(cost)}`, 'ev-sys');
+        }
+      }
+      UI.renderPlayers(); UI.renderHUD();
+      await sleep(250);
+    }
   }
 
   G.endTurn();
@@ -327,6 +346,27 @@ window.applyRemoteAct = (a) => {
     const pay = G.repay(+a.v);
     UI.renderPlayers();
     if (pay > 0) UI.feed(`${p.emoji} 还贷 ${fmt(pay)}`, 'ev-sys');
+  } else if (a.t === 'buyStock') {
+    const cost = G.buyStock(p, a.v, 1);
+    UI.renderPlayers(); UI.renderHUD();
+    if (cost > 0) {
+      const s = STOCKS.find(x => x.id === a.v);
+      UI.feed(`${p.emoji} 买入 ${s ? s.icon + s.name : a.v} 1股 -${fmt(cost)}`, 'ev-sys');
+    }
+  } else if (a.t === 'sellStock') {
+    const gain = G.sellStock(p, a.v, 1);
+    UI.renderPlayers(); UI.renderHUD();
+    if (gain > 0) {
+      const s = STOCKS.find(x => x.id === a.v);
+      UI.feed(`${p.emoji} 卖出 ${s ? s.icon + s.name : a.v} 1股 +${fmt(gain)}`, 'ev-good');
+    }
+  } else if (a.t === 'buyIns') {
+    const ok = G.buyInsurance(p, a.v);
+    UI.renderPlayers();
+    if (ok) {
+      const d = INSURANCE.find(x => x.id === a.v);
+      UI.feed(`${p.emoji} 投保 ${d ? d.icon + d.name : a.v} -${fmt(d ? d.premium : 0)}`, 'ev-sys');
+    }
   }
   Net.pushState(G, Net.wait);
   return true;

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#0B2434">
 <title>环马大富翁 · EatPlan Monopoly</title>
-<!-- 联机房间 API：同域部署留空；跨域部署填来源，如 https://example.com （游戏本身不绑定任何站点） -->
-<script>window.EP_MONO_API = window.EP_MONO_API || '';</script>
+<!-- 联机房间 API：默认指向 eatplan.online（房间服务所在）；可被外层覆盖，游戏本身不强制绑定任何站点 -->
+<script>window.EP_MONO_API = window.EP_MONO_API || 'https://eatplan.online';</script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
